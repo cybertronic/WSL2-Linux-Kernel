@@ -4,7 +4,7 @@
  * Copyright (c) 2022, Microsoft Corporation.
  *
  * Author:
- *   Iouri Tarassov <iourit@linux.microsoft.com>
+ * Iouri Tarassov <iourit@linux.microsoft.com>
  *
  * Dxgkrnl Graphics Driver
  * VM bus interface implementation
@@ -3089,7 +3089,11 @@ int dxgvmb_send_wait_sync_object_gpu(struct dxgprocess *process,
 	command->context = context;
 	command->object_count = object_count;
 	command->legacy_fence_object = legacy_fence;
-	current_pos = (u8 *) command->fence_values;
+	/*
+	 * Calculate pointer from msg.msg to bypass strict FORTIFY_SOURCE
+	 * bounds checking on the trailing array member.
+	 */
+	current_pos = (u8 *)msg.msg + offsetof(struct dxgkvmb_command_waitforsyncobjectfromgpu, fence_values);
 	memcpy(current_pos, fences, fence_size);
 	current_pos += fence_size;
 	memcpy(current_pos, objects, object_size);
